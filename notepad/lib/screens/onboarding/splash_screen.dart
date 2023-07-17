@@ -37,7 +37,7 @@ class _SplashScreenState extends State<SplashScreen> {
                 fontSize: 20,
                 fontWeight: FontWeight.w600
               ),),
-              SizedBox(height: 10,),
+              const SizedBox(height: 10),
               const Text('Everything note, easy and organised', style: TextStyle(
                   color: Colors.white70,
                   fontSize: 14,
