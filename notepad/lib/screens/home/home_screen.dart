@@ -10,6 +10,24 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   List<NoteModel> allNotes = [];
+  TextEditingController titleController = TextEditingController();
+  TextEditingController descriptionController = TextEditingController();
+
+  // This is the first function called when a class is added to the widget tree
+  // ie when a class is created
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+  }
+
+  //This is called when a class is destroyed or removed from the widget tree
+  @override
+  void dispose() {
+    titleController.dispose();
+    descriptionController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -53,13 +71,49 @@ class _HomeScreenState extends State<HomeScreen> {
         )),
         floatingActionButton: GestureDetector(
           onTap: () {
-            setState(() {
-              allNotes.add(NoteModel(
-                  noteId: 0,
-                  noteTitle: 'New note',
-                  noteDescription:
-                      'The default placeholder is an empty box (LimitedBox) - although if a height or width is specified on the SvgPicture, a SizedBox will be used instead (which ensures better layout experience). There is currently no way to show an Error visually, however errors will get properly logged to the console in debug mode.'));
-            });
+            showDialog(
+                context: context,
+                builder: (BuildContext context) {
+                  return AlertDialog(
+                    title: const Text(
+                      'New\nnote',
+                      style: TextStyle(
+                          color: Colors.black, fontWeight: FontWeight.bold),
+                    ),
+                    content: Column(
+                      children: [
+                        TextField(
+                          controller: titleController,
+                          decoration: const InputDecoration(hintText: 'Title'),
+                          style: const TextStyle(color: Colors.black),
+                        ),
+                        TextField(
+                          controller: descriptionController,
+                          decoration: const InputDecoration(hintText: 'Description'),
+                          style: const TextStyle(color: Colors.black),
+                        ),
+                      ],
+                    ),
+                    actions: [
+                      ElevatedButton(onPressed: () {
+                        Navigator.pop(context);
+                      }, child: const Text('Cancel')),
+                      ElevatedButton(
+                          onPressed: () {
+                            setState(() {
+                              allNotes.add(NoteModel(
+                                  noteId: allNotes.length+1,
+                                  noteTitle: titleController.text,
+                                  noteDescription: descriptionController.text));
+                            });
+                            titleController.clear();
+                            descriptionController.clear();
+                            Navigator.pop(context);
+                          },
+                          child: const Text('Submit')),
+                    ],
+                  );
+                });
           },
           child: Container(
               padding: const EdgeInsets.all(20),
@@ -75,9 +129,9 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Widget noteItem(NoteModel noteItem, int noteIndex) {
     return GestureDetector(
-      onTap: (){
+      onLongPress: (){
         setState(() {
-          allNotes.removeAt(noteIndex);
+          allNotes.remove(noteItem);
         });
       },
       child: Container(
@@ -87,25 +141,38 @@ class _HomeScreenState extends State<HomeScreen> {
             borderRadius: const BorderRadius.all(Radius.circular(10))),
         child: Padding(
           padding: const EdgeInsets.all(8.0),
-          child: Column(
+          child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                noteItem.noteTitle,
+                noteItem.noteId.toString(),
                 style: const TextStyle(
                     color: Colors.black,
-                    fontSize: 18,
-                    fontWeight: FontWeight.w600),
+                    fontSize: 14,
+                    fontWeight: FontWeight.w400),
               ),
-              const SizedBox(
-                height: 10,
-              ),
-              Text(
-                noteItem.noteDescription,
-                style: TextStyle(
-                    color: Colors.black.withOpacity(.4),
-                    fontSize: 13,
-                    fontWeight: FontWeight.w300),
+              const SizedBox(width: 20),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    noteItem.noteTitle,
+                    style: const TextStyle(
+                        color: Colors.black,
+                        fontSize: 18,
+                        fontWeight: FontWeight.w600),
+                  ),
+                  const SizedBox(
+                    height: 10,
+                  ),
+                  Text(
+                    noteItem.noteDescription,
+                    style: TextStyle(
+                        color: Colors.black.withOpacity(.4),
+                        fontSize: 13,
+                        fontWeight: FontWeight.w300),
+                  ),
+                ],
               ),
             ],
           ),
