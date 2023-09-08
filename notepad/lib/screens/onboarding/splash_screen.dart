@@ -1,6 +1,8 @@
 import 'dart:async';
 
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:notepad/screens/home/home_screen.dart';
 import 'package:notepad/screens/onboarding/onboarding_screen.dart';
 
 class SplashScreen extends StatefulWidget {
@@ -15,8 +17,15 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   void initState() {
     Timer(const Duration(seconds: 3), () {
-      Navigator.of(context)
-          .push(MaterialPageRoute(builder: (context) => const OnboardingScreen()));
+      var user = FirebaseAuth.instance.currentUser;
+      if(user == null){
+        Navigator.of(context)
+            .push(MaterialPageRoute(builder: (context) => const OnboardingScreen()));
+      }else{
+        Navigator.of(context)
+            .push(MaterialPageRoute(builder: (context) => const HomeScreen()));
+      }
+
     });
     super.initState();
   }
@@ -43,6 +52,8 @@ class _SplashScreenState extends State<SplashScreen> {
                   fontSize: 14,
                   fontWeight: FontWeight.w400
               ),),
+
+
             ],
           ),
         ),

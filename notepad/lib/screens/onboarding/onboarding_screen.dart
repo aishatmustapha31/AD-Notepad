@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:notepad/models/onboarding_model.dart';
+import 'package:notepad/screens/authentication/sign_in.dart';
 import 'package:notepad/screens/home/home_screen.dart';
 
 class OnboardingScreen extends StatefulWidget {
@@ -92,7 +93,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                 child: ElevatedButton(
                   onPressed: () {
                     Navigator.of(context).push(MaterialPageRoute(
-                        builder: (context) => const HomeScreen()));
+                        builder: (context) => const SignIn()));
                   },
                   child: const Text(
                     'Get Started',
