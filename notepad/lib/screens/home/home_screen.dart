@@ -4,6 +4,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:notepad/managers/firebase_note_manager.dart';
 import 'package:notepad/managers/note_manager.dart';
 import 'package:notepad/models/note_model.dart';
 import 'package:notepad/screens/onboarding/onboarding_screen.dart';
@@ -26,6 +27,7 @@ class _HomeScreenState extends State<HomeScreen> {
   // ie when a class is created
 
   var noteManager = NoteManager();
+  var firebaseNoteManager = FirebaseNoteManager();
   late Future<List<NoteModel>> _notes;
 
   @override
@@ -133,67 +135,69 @@ class _HomeScreenState extends State<HomeScreen> {
         )),
         floatingActionButton: GestureDetector(
           onTap: () {
-            titleController.clear();
-            descriptionController.clear();
-            imageFromPhonePath = XFile("");
-            showDialog(
-                context: context,
-                builder: (BuildContext context) {
-                  return AlertDialog(
-                    title: const Text(
-                      'New\nnote',
-                      style: TextStyle(
-                          color: Colors.black, fontWeight: FontWeight.bold),
-                    ),
-                    content: Column(
-                      children: [
-                        TextField(
-                          controller: titleController,
-                          decoration: const InputDecoration(hintText: 'Title'),
-                          style: const TextStyle(color: Colors.black),
-                        ),
-                        TextField(
-                          controller: descriptionController,
-                          decoration:
-                              const InputDecoration(hintText: 'Description'),
-                          style: const TextStyle(color: Colors.black),
-                        ),
-                        Visibility(
-                            visible: imageFromPhonePath.path != "",
-                            child: Image.file(File(imageFromPhonePath.path))),
-                        GestureDetector(
-                            onTap: (){
-                              pickImageFromGallery();
-                            },
-                            child: Padding(
-                              padding: const EdgeInsets.all(20.0),
-                              child: Text('Pick image'),
-                            ))
-                      ],
-                    ),
-                    actions: [
-                      ElevatedButton(
-                          onPressed: () {
-                            Navigator.pop(context);
-                          },
-                          child: const Text('Cancel')),
-                      ElevatedButton(
-                          onPressed: () {
-                            noteManager.saveNote(NoteModel(
-                              noteImage: imageFromPhonePath.path,
-                                noteId: DateTime.now().toString(),
-                                noteTitle: titleController.text,
-                                noteDescription: descriptionController.text));
-                            _notes = noteManager.fetchAllNotes();
-                            setState(() {
+            // titleController.clear();
+            // descriptionController.clear();
+            // imageFromPhonePath = XFile("");
+            // showDialog(
+            //     context: context,
+            //     builder: (BuildContext context) {
+            //       return AlertDialog(
+            //         title: const Text(
+            //           'New\nnote',
+            //           style: TextStyle(
+            //               color: Colors.black, fontWeight: FontWeight.bold),
+            //         ),
+            //         content: Column(
+            //           children: [
+            //             TextField(
+            //               controller: titleController,
+            //               decoration: const InputDecoration(hintText: 'Title'),
+            //               style: const TextStyle(color: Colors.black),
+            //             ),
+            //             TextField(
+            //               controller: descriptionController,
+            //               decoration:
+            //                   const InputDecoration(hintText: 'Description'),
+            //               style: const TextStyle(color: Colors.black),
+            //             ),
+            //             Visibility(
+            //                 visible: imageFromPhonePath.path != "",
+            //                 child: Image.file(File(imageFromPhonePath.path))),
+            //             GestureDetector(
+            //                 onTap: (){
+            //                   pickImageFromGallery();
+            //                 },
+            //                 child: Padding(
+            //                   padding: const EdgeInsets.all(20.0),
+            //                   child: Text('Pick image'),
+            //                 ))
+            //           ],
+            //         ),
+            //         actions: [
+            //           ElevatedButton(
+            //               onPressed: () {
+            //                 Navigator.pop(context);
+            //               },
+            //               child: const Text('Cancel')),
+            //           ElevatedButton(
+            //               onPressed: () {
+            //                 noteManager.saveNote(NoteModel(
+            //                   noteImage: imageFromPhonePath.path,
+            //                     noteId: DateTime.now().toString(),
+            //                     noteTitle: titleController.text,
+            //                     noteDescription: descriptionController.text));
+            //                 _notes = noteManager.fetchAllNotes();
+            //                 setState(() {
+            //
+            //                 });
+            //                 Navigator.pop(context);
+            //               },
+            //               child: const Text('Submit')),
+            //         ],
+            //       );
+            //     });
+            firebaseNoteManager.update();
 
-                            });
-                            Navigator.pop(context);
-                          },
-                          child: const Text('Submit')),
-                    ],
-                  );
-                });
           },
           child: Container(
               padding: const EdgeInsets.all(20),

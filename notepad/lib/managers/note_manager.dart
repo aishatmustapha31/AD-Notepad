@@ -4,7 +4,6 @@ import 'package:notepad/models/note_model.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class NoteManager{
-
   saveNote(NoteModel noteModel) async {
     final pref = await SharedPreferences.getInstance();
     final noteJson = noteModel.toJson();

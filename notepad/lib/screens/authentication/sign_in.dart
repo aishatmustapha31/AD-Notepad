@@ -1,5 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:notepad/screens/authentication/otpPage.dart';
 import 'package:notepad/screens/home/home_screen.dart';
 
 class SignIn extends StatefulWidget {
@@ -14,6 +16,8 @@ class _SignInState extends State<SignIn> {
   TextEditingController emailFieldController = TextEditingController();
 
   String error = "";
+  bool isLoading = false;
+  bool isSigningin = false;
 
   @override
   Widget build(BuildContext context) {
@@ -57,7 +61,7 @@ class _SignInState extends State<SignIn> {
                           borderRadius: BorderRadius.all(Radius.circular(8)),
                           borderSide:
                               BorderSide(color: Color(0xFFd8d8d8), width: 1)),
-                      hintText: 'Email Address',
+                      hintText: 'Email Address or phone number',
                       hintStyle: TextStyle(
                         color: Colors.white,
                         fontSize: 14,
@@ -82,10 +86,19 @@ class _SignInState extends State<SignIn> {
               ),
               GestureDetector(
                 onTap: () {
-                  signUP();
+                  if(emailFieldController.text.isNotEmpty){
+                    setState(() {
+                      isLoading = true;
+                    });
+                    signUP();
+                  }else{
+                    print('Credentials required');
+                  }
+
                 },
                 child: Center(
-                  child: Container(
+                  child: isLoading ? const CupertinoActivityIndicator(color: Colors.white, radius: 30,) :
+                  Container(
                       padding: EdgeInsets.all(14),
                       decoration: BoxDecoration(
                           color: Colors.green,
@@ -97,7 +110,7 @@ class _SignInState extends State<SignIn> {
                           'Create Account',
                           style: TextStyle(color: Colors.white, fontSize: 20),
                         ),
-                      )),
+                      )) ,
                 ),
               ),
               const SizedBox(
@@ -105,10 +118,19 @@ class _SignInState extends State<SignIn> {
               ),
               GestureDetector(
                 onTap: () {
-                  signIn();
+                  if(emailFieldController.text.isNotEmpty){
+                    setState(() {
+                      isSigningin = true;
+                    });
+                    signIn();
+                  }else{
+                    print('Credentials required');
+                  }
+
                 },
                 child: Center(
-                  child: Container(
+                    child: isSigningin ? const CupertinoActivityIndicator(color: Colors.white, radius: 30,) :
+                     Container(
                       padding: EdgeInsets.all(14),
                       decoration: BoxDecoration(
                           color: Colors.green,
@@ -156,6 +178,14 @@ class _SignInState extends State<SignIn> {
     );
   }
 
+  bool isEmailValid(String email) {
+    final RegExp emailRegex = RegExp(
+      r'^[\w-]+(\.[\w-]+)*@([\w-]+\.)+[a-zA-Z]{2,7}$',
+    );
+    return emailRegex.hasMatch(email);
+  }
+
+
   signUP() async {
     setState(() {
       error = "";
@@ -165,21 +195,27 @@ class _SignInState extends State<SignIn> {
         email: emailFieldController.text.trim(),
         password: passwordController.text.trim(),
       );
-      Navigator.of(context).push(MaterialPageRoute(
+      Navigator.of(context).pushReplacement(MaterialPageRoute(
           builder: (context) => const HomeScreen()));
     } on FirebaseAuthException catch (e) {
       if (e.code == 'weak-password') {
         setState(() {
           error = "The password provided is too weak.";
+          isLoading = false;
         });
         print('The password provided is too weak.');
       } else if (e.code == 'email-already-in-use') {
         setState(() {
+          isLoading = false;
           error = "The account already exists for that email.";
         });
         print('The account already exists for that email.');
       }
     } catch (exception) {
+      setState(() {
+        isLoading = false;
+        error = "$exception";
+      });
       print(exception);
     }
   }
@@ -189,12 +225,31 @@ class _SignInState extends State<SignIn> {
       error = "";
     });
     try {
-      final credential = await FirebaseAuth.instance.signInWithEmailAndPassword(
-        email: emailFieldController.text.trim(),
-        password: passwordController.text.trim(),
-      );
-      Navigator.of(context).push(MaterialPageRoute(
-          builder: (context) => const HomeScreen()));
+      if(isEmailValid(emailFieldController.text.trim())) {
+        final credential = await FirebaseAuth.instance
+            .signInWithEmailAndPassword(
+          email: emailFieldController.text.trim(),
+          password: passwordController.text.trim(),
+        );
+        Navigator.of(context).pushReplacement(MaterialPageRoute(
+            builder: (context) => const HomeScreen()));
+      }else{
+        await FirebaseAuth.instance.verifyPhoneNumber(
+          phoneNumber: emailFieldController.text.toString(),
+          verificationCompleted: (PhoneAuthCredential credential) {},
+          verificationFailed: (FirebaseAuthException e) {
+            setState(() {
+              isSigningin = false;
+              error = "$e";
+            });
+          },
+          codeSent: (String verificationId, int? resendToken) {
+            Navigator.of(context).pushReplacement(MaterialPageRoute(
+                builder: (context) => OtpPage(verificationID: verificationId)));
+          },
+          codeAutoRetrievalTimeout: (String verificationId) {},
+        );
+      }
     } on FirebaseAuthException catch (e) {
       if (e.code == 'user-not-found') {
         setState(() {
